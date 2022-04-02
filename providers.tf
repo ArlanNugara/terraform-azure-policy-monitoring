@@ -9,10 +9,10 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "rg-terraform-policy-state"
-    storage_account_name = "alvtfsa"
-    container_name       = "tfstate"
-    key                  = "policymonitor.terraform.tfstate"
+    resource_group_name  = "<Your Value here>"
+    storage_account_name = "<Your Value here>"
+    container_name       = "<Your Value here>"
+    key                  = "<Your Value here>"
   }
 }
 

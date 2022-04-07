@@ -1,0 +1,37 @@
+name: DeployTerraform
+
+jobs:
+  build:
+    name: DeployTerraform
+    runs-on: ubuntu-latest
+    env:
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.0
+          terraform_wrapper: false
+
+      - name: CHECKOV
+        run: pip install checkov && checkov -o junitxml | tee checkov.test.xml
+
+      - name: FMT
+        run: terraform fmt -check -recursive
+      
+      - name: TFLINT
+        run: tflint --config .tflint.hcl --var-file=policies.auto.tfvars
+      
+      - name: INIT
+        run: terraform init
+      
+      - name: VALIDATE
+        run: terraform validate
+      
+      - name: PLAN
+        run: terraform plan -out policy.json
+      
+      - name: APPLY
+        run: terraform apply policy.json

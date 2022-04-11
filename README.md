@@ -36,6 +36,7 @@ The deployment steps are as follows
 Fire the below command to create the resources using Terraform script
 
 > terraform plan
+
 > terraform apply
 
 ### Deploy the Function

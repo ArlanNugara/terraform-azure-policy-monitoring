@@ -1,0 +1,66 @@
+image:
+  name: hashicorp/terraform:light
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+before_script:
+  - terraform --version
+
+stages:
+  - checkov
+  - fmt
+  - tflint
+  - init
+  - validate
+  - plan
+  - apply
+
+checkov:
+  stage: checkov
+  script:
+    - pip install checkov
+    - checkov -o junitxml | tee checkov.test.xml
+fmt:
+  stage: fmt
+  script:
+    - terraform fmt -check -recursive
+
+tflint:
+  stage: tflint
+  script:
+    - tflint --config .tflint.hcl --var-file=policies.auto.tfvars
+  dependencies:
+    - validate
+
+init:
+  stage: init
+  script:
+    - terraform init
+  dependencies:
+    - tflint
+
+validate:
+  stage: validate
+  script:
+    - terraform validate
+  dependencies:
+    - init
+
+plan:
+  stage: plan
+  script:
+    - terraform plan -out policy.json
+  dependencies:
+    - validate
+  artifacts:
+    paths:
+      - planfile
+
+apply:
+  stage: apply
+  script:
+    - terraform apply policy.json
+  dependencies:
+    - plan
+  when: manual

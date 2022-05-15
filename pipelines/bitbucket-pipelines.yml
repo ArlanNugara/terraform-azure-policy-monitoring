@@ -1,0 +1,40 @@
+image: hashicorp/terraform:full
+
+pipelines:
+  default:
+    - step:
+        name: Checkov
+        script:
+          - pip install checkov
+          - checkov -o junitxml | tee checkov.test.xml
+
+    - step:
+        name: FMT
+        script:
+          - terraform fmt -check -recursive
+    
+    - step:
+        name: TFLINT
+        script:
+          - tflint --config .tflint.hcl --var-file=policies.auto.tfvars
+    
+    - step:
+        name: INIT
+        script:
+          - terraform init
+    
+    - step:
+        name: VALIDATE
+        script:
+          - terraform validate
+    
+    - step:
+        name: PLAN
+        script:
+          - terraform plan -out policy.json
+    
+    - step:
+        name: APPLY
+        trigger: manual
+        script:
+          - terraform apply policy.json
